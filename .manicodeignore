@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+.next/
+
+# Build outputs
+out/
+build/
+dist/
+
+# Environment and config
+.env*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Cache and logs
+*.log
+.cache/
+coverage/
+
+# Editor and OS files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Test files
+**/*.test.*
+**/*.spec.*
+
+# Very long files
+/app/api/chat/constants.ts
+
+# Place for copying files that are tool long and will break manicode
+scratch.md

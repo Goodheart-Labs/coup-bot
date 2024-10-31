@@ -1,101 +1,159 @@
-import Image from "next/image";
+"use client";
+
+import React, { useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [messages, setMessages] = useState([
+    {
+      id: "1",
+      text: "Hi I think Trump attempted a coup, which culminated in the events of Jan 6th 2021. Can you convince me otherwise?",
+      sender: "bot",
+    },
+  ]);
+  const [inputText, setInputText] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const generateResponse = async (input: string) => {
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message: input }),
+      });
+      const data = await response.json();
+      console.log("Frontend received:", data); // For debugging
+      console.log("Frontend received raw:", JSON.stringify(data)); // For debugging exact string content
+      return (
+        data.text ||
+        "I apologize, but I encountered an error. Please try again."
+      );
+    } catch (error) {
+      console.error("Error calling API:", error);
+      return "I apologize, but I encountered an error. Please try again.";
+    }
+  };
+
+  const handleSend = async () => {
+    if (!inputText.trim() || isLoading) return;
+
+    const userMessage = {
+      id: Date.now().toString(),
+      text: inputText,
+      sender: "user",
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setInputText("");
+    setIsLoading(true);
+
+    const response = await generateResponse(inputText);
+
+    const botMessage = {
+      id: (Date.now() + 1).toString(),
+      text: response,
+      sender: "bot",
+    };
+
+    setMessages((prev) => [...prev, botMessage]);
+    setIsLoading(false);
+  };
+
+  return (
+    <div className="flex flex-col h-screen bg-gray-100">
+      <header className="bg-blue-600 text-white p-4">
+        <h1 className="text-xl font-bold text-center">
+          Coup-bot - Can you convince me there wasn't a coup?
+        </h1>
+      </header>
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="max-w-2xl mx-auto space-y-4">
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex ${
+                message.sender === "user" ? "justify-end" : "justify-start"
+              }`}
+            >
+              <div
+                className={`max-w-[80%] rounded-lg p-3 ${
+                  message.sender === "user"
+                    ? "bg-blue-500 text-white"
+                    : "bg-white text-gray-800"
+                }`}
+              >
+                <div className="space-y-2">
+                  {/* Debug output */}
+                  {console.log("Raw message text:", message.text)}
+                  {console.log("Raw message text raw:", JSON.stringify(message.text))}
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      sup: ({ node, ...props }) => {
+                        console.log("Sup component called");
+                        console.log("Sup node:", JSON.stringify(node));
+                        console.log("Sup props:", JSON.stringify(props));
+                        return (
+                          <sup className="text-xs align-super" {...props} />
+                        );
+                      },
+                      a: ({ node, ...props }) => (
+                        <a
+                          className="text-blue-500 hover:underline"
+                          {...props}
+                        />
+                      ),
+                      ol: ({ node, ...props }) => (
+                        <ol className="list-decimal list-inside" {...props} />
+                      ),
+                      ul: ({ node, ...props }) => (
+                        <ol className="list-disc list-inside" {...props} />
+                      ),
+                    }}
+                  >
+                    {message.text || ""}
+                  </ReactMarkdown>
+                </div>
+              </div>
+            </div>
+          ))}
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="max-w-[80%] rounded-lg p-3 bg-white text-gray-800">
+                Thinking...
+              </div>
+            </div>
+          )}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+      </div>
+      <div className="p-4 bg-white border-t">
+        <div className="max-w-2xl mx-auto flex gap-2">
+          <input
+            type="text"
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleSend();
+            }}
+            className="flex-1 p-2 border rounded"
+            placeholder="Type your message..."
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          <button
+            onClick={handleSend}
+            disabled={isLoading}
+            className={`px-4 py-2 rounded ${
+              isLoading
+                ? "bg-blue-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
+            } text-white`}
+          >
+            Send
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
