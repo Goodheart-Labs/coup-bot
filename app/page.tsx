@@ -86,9 +86,6 @@ export default function Home() {
                 }`}
               >
                 <div className="space-y-2">
-                  {/* Debug output */}
-                  {console.log("Raw message text:", message.text)}
-                  {console.log("Raw message text raw:", JSON.stringify(message.text))}
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
@@ -108,8 +105,8 @@ export default function Home() {
                       ol: ({ ...props }) => (
                         <ol className="list-decimal list-inside" {...props} />
                       ),
-                      ul: ({ node, ...props }) => (
-                        <ol className="list-disc list-inside" {...props} />
+                      ul: ({ ...props }) => (
+                        <ul className="list-disc list-inside" {...props} />
                       ),
                     }}
                   >

@@ -22,13 +22,27 @@ export async function POST(req: Request) {
           },
         ],
       });
-      const responseText = response.content[0].text;
+      
+      // Handle different content block types
+      const content = response.content[0];
+      let responseText = '';
+      
+      if ('text' in content) {
+        responseText = content.text;
+      } else if (typeof content === 'object' && content !== null) {
+        // Convert other content types to string if needed
+        responseText = JSON.stringify(content);
+      }
+
       console.log("API Response:", responseText); // For debugging
       console.log("API Response raw:", JSON.stringify(responseText)); // For debugging exact string content
       return NextResponse.json({ text: responseText });
     } catch (error) {
       console.error('API Error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      if (error instanceof Error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+      return NextResponse.json({ error: 'Unknown error occurred' }, { status: 500 });
     }
   } catch (error) {
     console.error('Error:', error);
