@@ -92,21 +92,20 @@ export default function Home() {
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
-                      sup: ({ node, ...props }) => {
+                      sup: ({ ...props }) => {
                         console.log("Sup component called");
-                        console.log("Sup node:", JSON.stringify(node));
                         console.log("Sup props:", JSON.stringify(props));
                         return (
                           <sup className="text-xs align-super" {...props} />
                         );
                       },
-                      a: ({ node, ...props }) => (
+                      a: ({ ...props }) => (
                         <a
                           className="text-blue-500 hover:underline"
                           {...props}
                         />
                       ),
-                      ol: ({ node, ...props }) => (
+                      ol: ({ ...props }) => (
                         <ol className="list-decimal list-inside" {...props} />
                       ),
                       ul: ({ node, ...props }) => (
