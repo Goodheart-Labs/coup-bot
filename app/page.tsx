@@ -85,6 +85,9 @@ export default function Home() {
                     : "bg-white text-gray-800"
                 }`}
               >
+                {message.sender === "bot" && (
+                  <div className="text-xs text-gray-500 mb-2">Coup-bot:</div>
+                )}
                 <div className="space-y-2">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
@@ -103,10 +106,10 @@ export default function Home() {
                         />
                       ),
                       ol: ({ ...props }) => (
-                        <ol className="list-decimal list-inside" {...props} />
+                        <ol className="list-decimal list-inside [&>li]:pl-0" {...props} />
                       ),
                       ul: ({ ...props }) => (
-                        <ul className="list-disc list-inside" {...props} />
+                        <ul className="list-disc list-inside [&>li]:pl-0" {...props} />
                       ),
                     }}
                   >
@@ -134,7 +137,7 @@ export default function Home() {
             onKeyDown={(e) => {
               if (e.key === "Enter") handleSend();
             }}
-            className="flex-1 p-2 border rounded"
+            className="flex-1 p-2 border rounded text-black bg-white"
             placeholder="Type your message..."
           />
           <button
